@@ -5,7 +5,11 @@ def main():
     sys.stdout.write("$ ")
     sys.stdout.flush()
 
-    input()
+    command = input()
+
+    match command.split():
+        case [command, *args]:
+            print(f"{command}: command not found")
 
 
 if __name__ == "__main__":
