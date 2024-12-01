@@ -53,14 +53,13 @@ def quoted(s):
     while rest[0] != quote_kind:
         token, rest = escape(rest) if quote_kind == '"' else literal(rest)
         arg += token
-        # arg += rest[0]
-        # rest = rest[1:]
 
     rest = consume(rest, quote_kind)
 
     if not rest or rest[0].isspace():
         return arg, rest.lstrip()
 
+    # Addresses edge-case where an arg can be a mix of quoted and unquoted
     attached, rest = quoted(rest)
     return arg + attached, rest.lstrip()
 
