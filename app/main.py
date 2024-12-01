@@ -9,6 +9,9 @@ def main():
         command = input()
 
         match command.split():
+            case ["echo", *args]:
+                sys.stdout.write(' '.join(args) + '\n')
+                sys.stdout.flush()
             case ["exit", "0"]:
                 exit(0)
             case [command, *args]:
