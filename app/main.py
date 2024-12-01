@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 
-builtins = ["echo", "exit", "type", "pwd"]
+builtins = ["echo", "exit", "type", "pwd", "cd"]
 
 def matching_dirs(dirs, exe):
     return [dir for dir in dirs if os.path.exists(os.path.join(dir, exe))]
@@ -20,6 +20,11 @@ def main():
         command = input()
 
         match command.split():
+            case ["cd", path]:
+                if not os.path.exists(path):
+                    print(f"cd: {path}: No such file or directory")
+                else:
+                    os.chdir(path)
             case ["pwd"]:
                 print(os.getcwd())
             case ["type", arg]:
