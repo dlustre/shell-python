@@ -5,7 +5,7 @@ import subprocess
 builtins = ["echo", "exit", "type"]
 
 def matching_dirs(dirs, exe):
-    return [os.path.exists(os.path.join(dir, exe)) for dir in dirs]
+    return [dir for dir in dirs if os.path.exists(os.path.join(dir, exe))]
 
 def dir_contains_exec(dir, exe):
     return os.path.exists(os.path.join(dir, exe))
@@ -35,12 +35,12 @@ def main():
                 print(' '.join(args))
             case ["exit", "0"]:
                 exit(0)
-            case [command, *args]:
-                match matching_dirs(dirs, command):
+            case [cmd, *args]:
+                match matching_dirs(dirs, cmd):
                     case []:
-                        print(f"{command}: command not found")
+                        print(f"{cmd}: command not found")
                     case [first, *_]:
-                        subprocess.run([command] + args, capture_output=True)
+                        subprocess.run([os.path.join(first, cmd), *args])
 
 if __name__ == "__main__":
     main()
