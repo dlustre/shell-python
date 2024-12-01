@@ -4,6 +4,48 @@ import subprocess
 
 builtins = ["echo", "exit", "type", "pwd", "cd"]
 
+def consume(s, char):
+    if s[0] != char:
+        raise f"Expect '{char}' between args"
+    
+    return s[1:]
+
+def unquoted(args_str):
+    arg = ''
+    rest = args_str
+    
+    while rest and rest[0] != " ":
+        arg += rest[0]
+        rest = rest[1:]
+
+    return arg, rest.lstrip()
+
+def single_quoted(args_str):
+    if args_str[0] != "'":
+        return unquoted(args_str)
+
+    arg = ''
+    rest = args_str[1:]
+    
+    while rest[0] != "'":
+        arg += rest[0]
+        rest = rest[1:]
+
+    rest = consume(rest, "'")
+
+    return arg, rest.lstrip()
+
+
+def parse_args(args_str):
+    parsed = []
+
+    while args_str:
+        parsed_arg, args_str = single_quoted(args_str)
+        parsed.append(parsed_arg)
+
+    return parsed
+
+
 def matching_dirs(dirs, exe):
     return [dir for dir in dirs if os.path.exists(os.path.join(dir, exe))]
 
@@ -17,9 +59,13 @@ def main():
         sys.stdout.write("$ ")
         sys.stdout.flush()
 
-        command = input()
+        user_in = input()
 
-        match command.split():
+        command = user_in.split(' ', 1)
+
+        args = parse_args(command[1]) if len(command) > 1 else []
+
+        match [command[0], *args]:
             case ["cd", "~"]:
                 os.chdir(os.environ["HOME"])
             case ["cd", path]:
