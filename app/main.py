@@ -35,12 +35,26 @@ def single_quoted(args_str):
 
     return arg, rest.lstrip()
 
+def double_quoted(args_str):
+    if args_str[0] != '"':
+        return single_quoted(args_str)
+
+    arg = ''
+    rest = args_str[1:]
+    
+    while rest[0] != '"':
+        arg += rest[0]
+        rest = rest[1:]
+
+    rest = consume(rest, '"')
+
+    return arg, rest.lstrip()
 
 def parse_args(args_str):
     parsed = []
 
     while args_str:
-        parsed_arg, args_str = single_quoted(args_str)
+        parsed_arg, args_str = double_quoted(args_str)
         parsed.append(parsed_arg)
 
     return parsed
