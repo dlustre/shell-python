@@ -10,43 +10,39 @@ def consume(s, char):
     
     return s[1:]
 
+def literal(args_str):
+    return args_str[0], args_str[1:]
+
+# Intended for parsing backslashes.
+def unary(args_str):
+    if args_str[0] != '\\':
+        return literal(args_str)
+
+    return unary(args_str[1:])
+    
 def unquoted(args_str):
     arg = ''
     rest = args_str
     
     while rest and rest[0] != " ":
-        arg += rest[0]
-        rest = rest[1:]
+        literal, rest = unary(rest)
+        arg += literal
 
     return arg, rest.lstrip()
 
-def single_quoted(args_str):
-    if args_str[0] != "'":
+def quoted(args_str):
+    if args_str[0] not in ['"', "'"]:
         return unquoted(args_str)
 
+    quote_kind = args_str[0]
     arg = ''
     rest = args_str[1:]
     
-    while rest[0] != "'":
+    while rest[0] != quote_kind:
         arg += rest[0]
         rest = rest[1:]
 
-    rest = consume(rest, "'")
-
-    return arg, rest.lstrip()
-
-def double_quoted(args_str):
-    if args_str[0] != '"':
-        return single_quoted(args_str)
-
-    arg = ''
-    rest = args_str[1:]
-    
-    while rest[0] != '"':
-        arg += rest[0]
-        rest = rest[1:]
-
-    rest = consume(rest, '"')
+    rest = consume(rest, quote_kind)
 
     return arg, rest.lstrip()
 
@@ -54,7 +50,7 @@ def parse_args(args_str):
     parsed = []
 
     while args_str:
-        parsed_arg, args_str = double_quoted(args_str)
+        parsed_arg, args_str = quoted(args_str)
         parsed.append(parsed_arg)
 
     return parsed
