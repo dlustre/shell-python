@@ -20,6 +20,8 @@ def main():
         command = input()
 
         match command.split():
+            case ["cd", "~"]:
+                os.chdir(os.environ["HOME"])
             case ["cd", path]:
                 if not os.path.exists(path):
                     print(f"cd: {path}: No such file or directory")
