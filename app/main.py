@@ -9,6 +9,8 @@ def main():
         command = input()
 
         match command.split():
+            case ["exit", "0"]:
+                exit(0)
             case [command, *args]:
                 print(f"{command}: command not found")
 
