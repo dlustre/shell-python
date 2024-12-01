@@ -10,47 +10,65 @@ def consume(s, char):
     
     return s[1:]
 
-def literal(args_str):
-    return args_str[0], args_str[1:]
+def literal(s):
+    return s[0], s[1:]
 
-# Intended for parsing backslashes.
-def unary(args_str):
-    if args_str[0] != '\\':
-        return literal(args_str)
+def unquoted_backslash(s):
+    if s[0] != '\\':
+        return literal(s)
 
-    return unary(args_str[1:])
+    return unquoted_backslash(s[1:])
     
-def unquoted(args_str):
+def unquoted(s):
     arg = ''
-    rest = args_str
+    rest = s
     
     while rest and rest[0] != " ":
-        literal, rest = unary(rest)
+        literal, rest = unquoted_backslash(rest)
         arg += literal
 
     return arg, rest.lstrip()
 
-def quoted(args_str):
-    if args_str[0] not in ['"', "'"]:
-        return unquoted(args_str)
+# Double-quote backslash
+def escape(s):
+    if s[0] != '\\':
+        return literal(s)
 
-    quote_kind = args_str[0]
+    match s[0], s[1]:
+        case '\\', '"':
+            return '"', s[2:]
+        case '\\', '\\':
+            return '\\', s[2:]
+
+    return s[0], s[1:]
+
+def quoted(s):
+    if s[0] not in ['"', "'"]:
+        return unquoted(s)
+
+    quote_kind = s[0]
     arg = ''
-    rest = args_str[1:]
+    rest = s[1:]
     
     while rest[0] != quote_kind:
-        arg += rest[0]
-        rest = rest[1:]
+        token, rest = escape(rest) if quote_kind == '"' else literal(rest)
+        arg += token
+        # arg += rest[0]
+        # rest = rest[1:]
 
     rest = consume(rest, quote_kind)
 
-    return arg, rest.lstrip()
+    if not rest or rest[0].isspace():
+        return arg, rest.lstrip()
 
-def parse_args(args_str):
+    attached, rest = quoted(rest)
+    return arg + attached, rest.lstrip()
+
+def parse_args(s):
     parsed = []
 
-    while args_str:
-        parsed_arg, args_str = quoted(args_str)
+    while s:
+        parsed_arg, s = quoted(s)
         parsed.append(parsed_arg)
 
     return parsed
