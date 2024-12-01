@@ -1,8 +1,14 @@
 import sys
+import os
 
 builtins = ["echo", "exit", "type"]
 
+def dir_contains_exec(dir, exe):
+    return os.path.exists(os.path.join(dir, exe))
+
 def main():
+    dirs = os.environ["PATH"].split(":")
+
     while True:
         sys.stdout.write("$ ")
         sys.stdout.flush()
@@ -11,7 +17,16 @@ def main():
 
         match command.split():
             case ["type", arg]:
-                print(f"{arg}{" is a shell builtin" if arg in builtins else ": not found"}")
+                msg = ": not found"
+                
+                for d in dirs:
+                    if dir_contains_exec(d, arg):
+                        msg = " is " + os.path.join(d, arg)
+                        break
+
+                if arg in builtins:
+                    msg = " is a shell builtin"
+                print(f"{arg}{msg}")
             case ["echo", *args]:
                 print(' '.join(args))
             case ["exit", "0"]:
