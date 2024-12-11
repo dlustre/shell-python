@@ -88,11 +88,7 @@ def main():
 
         user_in = input()
 
-        command = user_in.split(' ', 1)
-
-        args = parse_args(command[1]) if len(command) > 1 else []
-
-        match [command[0], *args]:
+        match parse_args(user_in):
             case ["cd", "~"]:
                 os.chdir(os.environ["HOME"])
             case ["cd", path]:
