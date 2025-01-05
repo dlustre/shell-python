@@ -72,7 +72,6 @@ def parse_args(s):
 
     return parsed
 
-
 def matching_dirs(dirs, exe):
     return [dir for dir in dirs if os.path.exists(os.path.join(dir, exe))]
 
@@ -88,37 +87,46 @@ def main():
 
         user_in = input()
 
-        match parse_args(user_in):
-            case ["cd", "~"]:
-                os.chdir(os.environ["HOME"])
-            case ["cd", path]:
-                if not os.path.exists(path):
-                    print(f"cd: {path}: No such file or directory")
-                else:
-                    os.chdir(path)
-            case ["pwd"]:
-                print(os.getcwd())
-            case ["type", arg]:
-                msg = ": not found"
-                
-                for d in dirs:
-                    if dir_contains_exec(d, arg):
-                        msg = " is " + os.path.join(d, arg)
-                        break
+        parsed_args = parse_args(user_in)
 
-                if arg in builtins:
-                    msg = " is a shell builtin"
-                print(f"{arg}{msg}")
-            case ["echo", *args]:
-                print(' '.join(args))
-            case ["exit", "0"]:
-                exit(0)
-            case [cmd, *args]:
-                match matching_dirs(dirs, cmd):
-                    case []:
-                        print(f"{cmd}: command not found")
-                    case [first, *_]:
-                        subprocess.run([os.path.join(first, cmd), *args])
+        if "1>" in parsed_args:
+            redirect_index = parsed_args.index("1>")
+            subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "w"))
+        elif ">" in parsed_args:
+            redirect_index = parsed_args.index(">")
+            subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "w"))
+        else:
+            match parsed_args:
+                case ["cd", "~"]:
+                    os.chdir(os.environ["HOME"])
+                case ["cd", path]:
+                    if not os.path.exists(path):
+                        print(f"cd: {path}: No such file or directory")
+                    else:
+                        os.chdir(path)
+                case ["pwd"]:
+                    print(os.getcwd())
+                case ["type", arg]:
+                    msg = ": not found"
+                    
+                    for d in dirs:
+                        if dir_contains_exec(d, arg):
+                            msg = " is " + os.path.join(d, arg)
+                            break
+
+                    if arg in builtins:
+                        msg = " is a shell builtin"
+                    print(f"{arg}{msg}")
+                case ["echo", *args]:
+                    print(' '.join(args))
+                case ["exit", "0"]:
+                    exit(0)
+                case [cmd, *args]:
+                    match matching_dirs(dirs, cmd):
+                        case []:
+                            print(f"{cmd}: command not found")
+                        case [first, *_]:
+                            subprocess.run([os.path.join(first, cmd), *args])
 
 if __name__ == "__main__":
     main()
