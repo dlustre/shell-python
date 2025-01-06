@@ -101,6 +101,8 @@ def main():
                     subprocess.run(parsed_args[:redirect_index], stderr=open(parsed_args[redirect_index + 1], "w"))
                 case ">>" | "1>>":
                     subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "a"))
+                case "2>>":
+                    subprocess.run(parsed_args[:redirect_index], stderr=open(parsed_args[redirect_index + 1], "a"))
             break
         else:
             match parsed_args:
