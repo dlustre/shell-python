@@ -3,6 +3,7 @@ import os
 import subprocess
 
 builtins = ["echo", "exit", "type", "pwd", "cd"]
+redirects = [">", "1>", "2>", ">>", "1>>", "2>>"]
 
 def consume(s, char):
     if s[0] != char:
@@ -89,15 +90,18 @@ def main():
 
         parsed_args = parse_args(user_in)
 
-        if "2>" in parsed_args:
-            redirect_index = parsed_args.index("2>")
-            subprocess.run(parsed_args[:redirect_index], stderr=open(parsed_args[redirect_index + 1], "w"))
-        elif "1>" in parsed_args:
-            redirect_index = parsed_args.index("1>")
-            subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "w"))
-        elif ">" in parsed_args:
-            redirect_index = parsed_args.index(">")
-            subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "w"))
+        for redirect in redirects:
+            if redirect not in parsed_args:
+                continue
+            redirect_index = parsed_args.index(redirect)
+            match redirect:
+                case ">" | "1>":
+                    subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "w"))
+                case "2>":
+                    subprocess.run(parsed_args[:redirect_index], stderr=open(parsed_args[redirect_index + 1], "w"))
+                case ">>" | "1>>":
+                    subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "a"))
+            break
         else:
             match parsed_args:
                 case ["cd", "~"]:
