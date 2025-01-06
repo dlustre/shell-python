@@ -89,7 +89,10 @@ def main():
 
         parsed_args = parse_args(user_in)
 
-        if "1>" in parsed_args:
+        if "2>" in parsed_args:
+            redirect_index = parsed_args.index("2>")
+            subprocess.run(parsed_args[:redirect_index], stderr=open(parsed_args[redirect_index + 1], "w"))
+        elif "1>" in parsed_args:
             redirect_index = parsed_args.index("1>")
             subprocess.run(parsed_args[:redirect_index], stdout=open(parsed_args[redirect_index + 1], "w"))
         elif ">" in parsed_args:
