@@ -2,13 +2,17 @@ import sys
 import os
 import subprocess
 import readline
+from pathlib import Path
 
 builtins = ["echo", "exit", "type", "pwd", "cd"]
 redirects = [">", "1>", "2>", ">>", "1>>", "2>>"]
+dirs = os.environ["PATH"].split(":")
+files = [p.name for ps in [list(Path(d).iterdir()) for d in dirs if Path(d).exists()] for p in ps if p.is_file()]
+candidates = files + builtins
 
 def completer(text, state):
-    matches = [b + " " for b in builtins if b.startswith(text)]
-    return matches[state] if state < len(matches) else None
+    matches = [c for c in candidates if c.startswith(text)]
+    return matches[state] + " " if state < len(matches) else None
     
 readline.set_completer(completer)
 readline.parse_and_bind("tab: complete")
@@ -88,8 +92,6 @@ def dir_contains_exec(dir, exe):
     return os.path.exists(os.path.join(dir, exe))
 
 def main():
-    dirs = os.environ["PATH"].split(":")
-
     while True:
         user_in = input("$ ")
 
