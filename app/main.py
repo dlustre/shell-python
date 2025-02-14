@@ -1,9 +1,17 @@
 import sys
 import os
 import subprocess
+import readline
 
 builtins = ["echo", "exit", "type", "pwd", "cd"]
 redirects = [">", "1>", "2>", ">>", "1>>", "2>>"]
+
+def completer(text, state):
+    matches = [b + " " for b in builtins if b.startswith(text)]
+    return matches[state] if state < len(matches) else None
+    
+readline.set_completer(completer)
+readline.parse_and_bind("tab: complete")
 
 def consume(s, char):
     if s[0] != char:
@@ -83,10 +91,7 @@ def main():
     dirs = os.environ["PATH"].split(":")
 
     while True:
-        sys.stdout.write("$ ")
-        sys.stdout.flush()
-
-        user_in = input()
+        user_in = input("$ ")
 
         parsed_args = parse_args(user_in)
 
@@ -135,7 +140,7 @@ def main():
                         case []:
                             print(f"{cmd}: command not found")
                         case [first, *_]:
-                            subprocess.run([os.path.join(first, cmd), *args])
+                            subprocess.run([cmd, *args])
 
 if __name__ == "__main__":
     main()
